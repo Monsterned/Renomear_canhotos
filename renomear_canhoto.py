@@ -5,8 +5,8 @@ import tkinter as tk
 from tkinter import messagebox
 
 # Caminho para a pasta contendo as imagens
-caminho_imagem = os.path.join(os.getcwd(), 'IMAGENS')
-
+caminho = os.getcwd()
+caminho_imagem = caminho + r'\IMAGENS'
 # Extensões de arquivos aceitas
 extensoes_aceitas = {".jpg", ".jpeg", ".jfif", ".png"}
 
@@ -70,13 +70,13 @@ for nome_arquivo in os.listdir(caminho_imagem):
             chave_de_acesso = obj.data.decode("utf-8")
             print(f"Chave de Acesso encontrada na imagem {nome_arquivo}: {chave_de_acesso}")
             
-            # Verificar se a chave tem o formato esperado e extrair o número
-            if len(chave_de_acesso) >= 34:
+            # Verificar se a chave é numérica e tem 44 caracteres
+            if chave_de_acesso.isdigit() and len(chave_de_acesso) == 44:
                 numero_nota_fiscal = chave_de_acesso[25:34]
                 numeros_notas_fiscais.append(numero_nota_fiscal)
                 print(f"Número da Nota Fiscal: {numero_nota_fiscal}")
             else:
-                print(f"Chave de Acesso {chave_de_acesso} não tem o comprimento esperado.")
+                print(f"Chave de Acesso {chave_de_acesso} inválida ou não é numérica.")
         
         if not numeros_notas_fiscais:
             print(f"Nenhum número de Nota Fiscal válido encontrado na imagem {nome_arquivo}.")
@@ -84,6 +84,7 @@ for nome_arquivo in os.listdir(caminho_imagem):
         
         # Definir o novo nome para a imagem com todos os números encontrados
         novo_nome = "_".join(numeros_notas_fiscais) + ".jpeg"
+        novo_nome = novo_nome.replace("/", "_")  # Substitui '/' por '_'
         print(f"Novo nome proposto: {novo_nome}")
         
         # Definir o caminho completo com o novo nome
@@ -91,8 +92,11 @@ for nome_arquivo in os.listdir(caminho_imagem):
         
         try:
             # Renomear a imagem
-            os.rename(caminho_atual, caminho_novo)
-            print(f"Imagem '{nome_arquivo}' renomeada para '{novo_nome}'")
+            if not os.path.exists(caminho_novo):
+                os.rename(caminho_atual, caminho_novo)
+                print(f"Imagem '{nome_arquivo}' renomeada para '{novo_nome}'")
+            else:
+                print(f"O arquivo '{novo_nome}' já existe. Pulando a renomeação.")
         except FileExistsError:
             print(f"Erro: O arquivo '{novo_nome}' já existe.")
         except Exception as e:
@@ -104,3 +108,4 @@ print("Processo de renomeação concluído.")
 root = tk.Tk()
 root.withdraw()  # Oculta a janela principal
 messagebox.showinfo("Aviso", "Processo finalizado com sucesso!")
+root.destroy()  # Destroi a janela tkinter
